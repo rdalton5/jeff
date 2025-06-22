@@ -17,7 +17,7 @@ impl DelayBuffer {
         }
     }
 
-    fn process(&mut self, input: f32, delay_samples: usize) -> f32 {
+    fn process(&mut self, input: f32, delay_samples: usize, feedback_magnitude: f32) -> f32 {
         // Ensure delay_samples doesn't exceed buffer size
         let delay_samples = delay_samples.min(self.size - 1);
 
@@ -31,21 +31,15 @@ impl DelayBuffer {
         // Get delayed sample
         let delayed_sample = self.buffer[read_pos];
 
-        // Write new sample to buffer
-        self.buffer[self.write_pos] = input;
+        // Apply feedback
+        let input_with_feedback = input + (delayed_sample * feedback_magnitude);
+
+        self.buffer[self.write_pos] = input_with_feedback;
 
         // Advance write position
         self.write_pos = (self.write_pos + 1) % self.size;
 
         delayed_sample
-    }
-
-    fn apply_feedback(&mut self, feedback_sample: f32) {
-        if self.write_pos > 0 {
-            self.buffer[self.write_pos - 1] += feedback_sample;
-        } else {
-            self.buffer[self.size - 1] += feedback_sample;
-        }
     }
 }
 
@@ -212,12 +206,12 @@ impl Plugin for Jeff {
     ) -> ProcessStatus {
         // Get current parameter values
         let delay_time_ms = self.params.delay_time.value();
-        let feedback = self.params.feedback.value() / 100.0; // Convert % to 0-1
+        let feedback_magnitude = self.params.feedback.value() / 100.0; // Convert % to 0-1
         let wet_level = self.params.wet_level.value() / 100.0;
         let dry_level = self.params.dry_level.value() / 100.0;
 
         // Calculate delay in samples
-        let delay_samples = ((delay_time_ms / 1000.0) * self.sample_rate) as usize;
+        let num_of_delay_samples = ((delay_time_ms / 1000.0) * self.sample_rate) as usize;
 
         for channel_samples in buffer.iter_samples() {
             // Process each channel
@@ -229,13 +223,10 @@ impl Plugin for Jeff {
                 };
 
                 let input_sample = *sample;
-                let delayed = delay_buffer.process(input_sample, delay_samples);
+                let delayed_sample = delay_buffer.process(input_sample, num_of_delay_samples, feedback_magnitude);
 
-                // Apply feedback
-                let feedback_sample = delayed * feedback;
-                delay_buffer.apply_feedback(feedback_sample);
-
-                *sample = dry_level * input_sample + wet_level * delayed;
+                let output_sample = (delayed_sample * wet_level) + (input_sample * dry_level);
+                *sample = output_sample;
             }
         }
 
