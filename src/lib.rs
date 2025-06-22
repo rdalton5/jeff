@@ -130,7 +130,7 @@ impl Plugin for Jeff {
     const NAME: &'static str = "Jeff";
     const VENDOR: &'static str = "Rob's Audio";
     const URL: &'static str = env!("CARGO_PKG_HOMEPAGE");
-    const EMAIL: &'static str = "your.email@example.com";
+    const EMAIL: &'static str = env!("CARGO_PKG_AUTHORS");
 
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

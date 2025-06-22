@@ -2,6 +2,10 @@
 name = "jeff"
 version = "0.1.0"
 edition = "2021"
+homepage = "https://github.com/rdalton5/jeff"
+repository = "https://github.com/rdalton5/jeff"
+authors = ["Rob Dalton <rdalton5@kent.edu>"]
+description = "Jeff - A simple delay effect VST plugin"
 
 [lib]
 name = "jeff"
