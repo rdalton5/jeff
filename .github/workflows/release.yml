@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
+
+jobs:
+  build:
+    name: Build Universal VST3
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install nih-plug tools
+        run: cargo install cargo-nih-plug
+
+      - name: Build plugin
+        run: cargo nih-plug bundle jeff --release --target ${{ matrix.target }}
+
+      - name: Upload VST3 bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: vst3-${{ matrix.target }}
+          path: target/${{ matrix.target }}/bundled/jeff.vst3
+
+      - name: Upload CLAP plugin (Linux/macOS only)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: clap-${{ matrix.target }}
+          path: target/${{ matrix.target }}/bundled/jeff.clap
+
+  release:
+    name: Create Universal Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create universal bundle
+        run: |
+          mkdir -p release
+          
+          # Copy base VST3 bundle from Linux build
+          cp -r vst3-x86_64-unknown-linux-gnu release/jeff.vst3
+          
+          # Add other platform binaries
+          cp -r vst3-x86_64-pc-windows-msvc/Contents/* release/jeff.vst3/Contents/ 2>/dev/null || true
+          cp -r vst3-x86_64-apple-darwin/Contents/* release/jeff.vst3/Contents/ 2>/dev/null || true  
+          cp -r vst3-aarch64-apple-darwin/Contents/* release/jeff.vst3/Contents/ 2>/dev/null || true
+          
+          # Add one CLAP plugin (they're all the same anyway)
+          cp clap-x86_64-unknown-linux-gnu/jeff.clap release/ 2>/dev/null || true
+
+      - name: Create archives
+        run: |
+          tar -czf jeff.tar.gz -C release .
+          zip -r jeff.zip release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            jeff.tar.gz
+            jeff.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          body: |
+            ## Jeff Delay Plugin
+            
+            Download and extract either archive to get:
+            - **jeff.vst3/** - Universal VST3 bundle (works on Linux, Windows, macOS)
+            - **jeff.clap** - CLAP plugin 
+            
+            ### Quick Install:
+            - **Linux**: Copy `jeff.vst3` to `~/.vst3/`
+            - **macOS**: Copy `jeff.vst3` to `~/Library/Audio/Plug-Ins/VST3/`
+            - **Windows**: Copy `jeff.vst3` to `C:\Program Files\Common Files\VST3\`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

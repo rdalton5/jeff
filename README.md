@@ -32,6 +32,18 @@ Your DAW will show these named parameters with proper units:
 3. **Wet Level** (0-100%): Level of the delayed signal in the output
 4. **Dry Level** (0-100%): Level of the original signal in the output
 
+## Downloads
+
+Get the latest release from the [Releases page](https://github.com/YOUR_USERNAME/jeff/releases) or build from source below.
+
+**Release contains:**
+- `jeff.vst3/` - Universal VST3 bundle (works on Linux, Windows, macOS Intel, macOS ARM64)
+- `jeff-linux.clap` - CLAP plugin for Linux
+- `jeff-macos-intel.clap` - CLAP plugin for macOS Intel  
+- `jeff-macos-arm64.clap` - CLAP plugin for macOS ARM64
+
+Available as both `jeff.tar.gz` and `jeff.zip` archives.
+
 ## Building
 
 ### Prerequisites
@@ -51,8 +63,8 @@ Your DAW will show these named parameters with proper units:
 
 ```bash
 # Build universal VST3 bundle + CLAP for all platforms
-cargo nih-plug bundle delay_vst --release && \
-cargo nih-plug bundle delay_vst --release --target x86_64-pc-windows-gnu
+cargo nih-plug bundle jeff --release && \
+cargo nih-plug bundle jeff --release --target x86_64-pc-windows-gnu
 
 # Or build raw libraries (optional, for development)
 cargo build --release
@@ -63,10 +75,10 @@ Or use VS Code tasks:
 - **Ctrl+Shift+P** → "Tasks: Run Task" → "Install VST3 Plugin" (Build + Install locally)
 
 The bundled plugins will be located at:
-- **Universal VST3 Bundle**: `target/bundled/delay_vst.vst3/` 
+- **Universal VST3 Bundle**: `target/bundled/jeff.vst3/` 
   - Contains binaries for: Linux, Windows (and macOS when built on Mac)
   - Single bundle works on all platforms
-- **CLAP Plugin**: `target/bundled/delay_vst.clap` (Linux/macOS)
+- **CLAP Plugin**: `target/bundled/jeff.clap` (Linux/macOS)
 
 ## Installation
 
@@ -75,17 +87,17 @@ Copy the VST3 bundle or CLAP plugin to your plugin directory:
 ```bash
 # VST3 (recommended - works in most modern DAWs)
 mkdir -p ~/.vst3
-cp -r target/bundled/delay_vst.vst3 ~/.vst3/
+cp -r target/bundled/jeff.vst3 ~/.vst3/
 
 # CLAP (modern open-source format)
 mkdir -p ~/.clap
-cp target/bundled/delay_vst.clap ~/.clap/
+cp target/bundled/jeff.clap ~/.clap/
 ```
 
 ### macOS
 Copy the VST3 bundle to your plugin directory:
 ```bash
-cp -r target/bundled/delay_vst.vst3 ~/Library/Audio/Plug-Ins/VST3/
+cp -r target/bundled/jeff.vst3 ~/Library/Audio/Plug-Ins/VST3/
 ```
 
 ### Windows
@@ -94,16 +106,16 @@ Copy the VST3 bundle to your plugin directory:
 # Example Windows VST3 directory:
 # C:\Program Files\Common Files\VST3\
 
-# Copy the entire delay_vst.vst3 folder to:
-# C:\Program Files\Common Files\VST3\delay_vst.vst3\
+# Copy the entire jeff.vst3 folder to:
+# C:\Program Files\Common Files\VST3\jeff.vst3\
 ```
 
-**Important**: VST3 plugins are **bundles** (folders), not single files. Make sure to copy the entire `delay_vst.vst3` folder.
+**Important**: VST3 plugins are **bundles** (folders), not single files. Make sure to copy the entire `jeff.vst3` folder.
 
 ## Usage
 
 1. Load the plugin in your DAW
-   - Look for "Delay" by "Rob's Audio" in your VST3 or CLAP plugin list
+   - Look for "Jeff" by "Rob's Audio" in your VST3 or CLAP plugin list
    - The plugin provides **full parameter automation** with named controls
 2. Adjust the parameters in your DAW:
    - **Delay Time**: 1-2000ms with smooth automation

@@ -16,29 +16,18 @@
             }
         },
         {
-            "label": "Bundle VST Plugin (All Platforms)",
+            "label": "Build Release",
             "type": "shell",
             "command": "bash",
-            "args": ["-c", "cargo nih-plug bundle jeff --release && cargo nih-plug bundle jeff --release --target x86_64-pc-windows-gnu"],
+            "args": [
+                "-c",
+                "echo \"Building universal VST3 bundle...\" && cargo nih-plug bundle jeff --release && cargo nih-plug bundle jeff --release --target x86_64-pc-windows-gnu && echo \"\" && echo \"Universal plugin built:\" && ls -la target/bundled/ && echo \"\" && echo \"VST3 bundle contents:\" && ls -la target/bundled/jeff.vst3/Contents/"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": ["$rustc"],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Clean Build",
-            "type": "shell",
-            "command": "cargo",
-            "args": ["clean"],
-            "group": "build",
-            "problemMatcher": [],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -61,12 +50,11 @@
             }
         },
         {
-            "label": "Install VST3 Plugin",
+            "label": "Clean Target Directory",
             "type": "shell",
             "command": "bash",
-            "args": ["-c", "mkdir -p ~/.vst3 && cp -r target/bundled/jeff.vst3 ~/.vst3/ && mkdir -p ~/.clap && cp target/bundled/jeff.clap ~/.clap/ && echo 'Plugin installed to ~/.vst3/ and ~/.clap/'"],
+            "args": ["-c", "cargo clean && echo 'Target directory cleaned'"],
             "group": "build",
-            "dependsOn": "Bundle VST Plugin (All Platforms)",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,
