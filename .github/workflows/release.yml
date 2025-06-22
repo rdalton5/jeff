@@ -32,20 +32,21 @@ jobs:
       - name: Build Linux plugin
         run: cargo nih-plug bundle jeff --release
 
-      - name: Build Windows plugin
-        run: cargo nih-plug bundle jeff --release --target x86_64-pc-windows-gnu
+      - name: Build Windows plugin (library only)
+        run: cargo build --release --target x86_64-pc-windows-gnu
 
       - name: Create release bundle
         run: |
           mkdir -p release/linux
           mkdir -p release/windows
           
-          # Copy Linux builds
+          # Copy Linux builds (bundled by cargo-nih-plug)
           cp -r target/bundled/jeff.vst3 release/linux/
           cp target/bundled/jeff.clap release/linux/ 2>/dev/null || true
           
-          # Copy Windows builds
-          cp -r target/x86_64-pc-windows-gnu/bundled/jeff.vst3 release/windows/
+          # Create Windows VST3 bundle manually
+          mkdir -p release/windows/jeff.vst3/Contents/x86_64-win
+          cp target/x86_64-pc-windows-gnu/release/jeff.dll release/windows/jeff.vst3/Contents/x86_64-win/jeff.vst3
 
       - name: Create archives
         run: |
