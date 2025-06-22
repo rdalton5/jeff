@@ -31,7 +31,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Install cargo-nih-plug
-        run: cargo install cargo-nih-plug
+        run: cargo install --git https://github.com/robbert-vdh/nih-plug.git cargo-nih-plug
 
       - name: Build plugin
         run: cargo nih-plug bundle jeff --release --target ${{ matrix.target }}
