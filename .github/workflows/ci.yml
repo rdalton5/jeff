@@ -35,10 +35,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -47,8 +44,8 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo-nih-plug
-        run: cargo install --git https://github.com/robbert-vdh/nih-plug.git cargo-nih-plug
+      - name: Build plugin (debug)
+        run: cargo build
 
-      - name: Build plugin
-        run: cargo nih-plug bundle jeff --release
+      - name: Build plugin (release)
+        run: cargo build --release

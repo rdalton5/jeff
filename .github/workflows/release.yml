@@ -6,52 +6,8 @@ on:
       - 'v*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
 
 jobs:
-  build:
-    name: Build Universal VST3
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-          - os: macos-latest
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            target: aarch64-apple-darwin
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - name: Install cargo-nih-plug
-        run: cargo install --git https://github.com/robbert-vdh/nih-plug.git cargo-nih-plug
-
-      - name: Build plugin
-        run: cargo nih-plug bundle jeff --release --target ${{ matrix.target }}
-
-      - name: Upload VST3 bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: vst3-${{ matrix.target }}
-          path: target/${{ matrix.target }}/bundled/jeff.vst3
-
-      - name: Upload CLAP plugin (Linux/macOS only)
-        if: runner.os != 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: clap-${{ matrix.target }}
-          path: target/${{ matrix.target }}/bundled/jeff.clap
-
   release:
-    name: Create Universal Release
-    needs: build
+    name: Build and Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -60,48 +16,66 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-gnu
 
-      - name: Create universal bundle
+      - name: Install Windows dependencies
         run: |
-          mkdir -p release
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64
+
+      - name: Install cargo-nih-plug
+        run: cargo install --git https://github.com/robbert-vdh/nih-plug.git cargo-nih-plug
+
+      - name: Build Linux plugin
+        run: cargo nih-plug bundle jeff --release
+
+      - name: Build Windows plugin
+        run: cargo nih-plug bundle jeff --release --target x86_64-pc-windows-gnu
+
+      - name: Create release bundle
+        run: |
+          mkdir -p release/linux
+          mkdir -p release/windows
           
-          # Copy base VST3 bundle from Linux build
-          cp -r vst3-x86_64-unknown-linux-gnu release/jeff.vst3
+          # Copy Linux builds
+          cp -r target/bundled/jeff.vst3 release/linux/
+          cp target/bundled/jeff.clap release/linux/ 2>/dev/null || true
           
-          # Add other platform binaries
-          cp -r vst3-x86_64-pc-windows-msvc/Contents/* release/jeff.vst3/Contents/ 2>/dev/null || true
-          cp -r vst3-x86_64-apple-darwin/Contents/* release/jeff.vst3/Contents/ 2>/dev/null || true  
-          cp -r vst3-aarch64-apple-darwin/Contents/* release/jeff.vst3/Contents/ 2>/dev/null || true
-          
-          # Add one CLAP plugin (they're all the same anyway)
-          cp clap-x86_64-unknown-linux-gnu/jeff.clap release/ 2>/dev/null || true
+          # Copy Windows builds
+          cp -r target/x86_64-pc-windows-gnu/bundled/jeff.vst3 release/windows/
 
       - name: Create archives
         run: |
-          tar -czf jeff.tar.gz -C release .
-          zip -r jeff.zip release/
+          cd release
+          tar -czf ../jeff-linux.tar.gz linux/
+          zip -r ../jeff-windows.zip windows/
+          tar -czf ../jeff-all-platforms.tar.gz .
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            jeff.tar.gz
-            jeff.zip
+            jeff-linux.tar.gz
+            jeff-windows.zip
+            jeff-all-platforms.tar.gz
           generate_release_notes: true
           draft: false
           prerelease: false
           body: |
-            ## Jeff Delay Plugin
+            ## Jeff Delay Plugin v${{ github.ref_name }}
             
-            Download and extract either archive to get:
-            - **jeff.vst3/** - Universal VST3 bundle (works on Linux, Windows, macOS)
-            - **jeff.clap** - CLAP plugin 
+            Simple delay effect VST3/CLAP plugin built with Rust.
             
-            ### Quick Install:
-            - **Linux**: Copy `jeff.vst3` to `~/.vst3/`
-            - **macOS**: Copy `jeff.vst3` to `~/Library/Audio/Plug-Ins/VST3/`
-            - **Windows**: Copy `jeff.vst3` to `C:\Program Files\Common Files\VST3\`
+            ### Downloads:
+            - **jeff-linux.tar.gz** - Linux VST3 + CLAP
+            - **jeff-windows.zip** - Windows VST3
+            - **jeff-all-platforms.tar.gz** - Both platforms
+            
+            ### Installation:
+            - **Linux**: Extract and copy jeff.vst3 to ~/.vst3/
+            - **Windows**: Extract and copy jeff.vst3 to C:\Program Files\Common Files\VST3\
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
