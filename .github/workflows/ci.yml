@@ -47,8 +47,5 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install nih-plug tools
-        run: cargo install cargo-nih-plug
-
       - name: Build plugin
         run: cargo nih-plug bundle jeff --release

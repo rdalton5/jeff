@@ -30,9 +30,6 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install nih-plug tools
-        run: cargo install cargo-nih-plug
-
       - name: Build plugin
         run: cargo nih-plug bundle jeff --release --target ${{ matrix.target }}
 
