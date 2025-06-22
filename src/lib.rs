@@ -20,7 +20,7 @@ impl DelayBuffer {
     fn process(&mut self, input: f32, delay_samples: usize) -> f32 {
         // Ensure delay_samples doesn't exceed buffer size
         let delay_samples = delay_samples.min(self.size - 1);
-        
+
         // Calculate read position
         let read_pos = if self.write_pos >= delay_samples {
             self.write_pos - delay_samples
@@ -38,6 +38,14 @@ impl DelayBuffer {
         self.write_pos = (self.write_pos + 1) % self.size;
 
         delayed_sample
+    }
+
+    fn apply_feedback(&mut self, feedback_sample: f32) {
+        if self.write_pos > 0 {
+            self.buffer[self.write_pos - 1] += feedback_sample;
+        } else {
+            self.buffer[self.size - 1] += feedback_sample;
+        }
     }
 }
 
@@ -80,7 +88,10 @@ impl Default for DelayParams {
             feedback: FloatParam::new(
                 "Feedback",
                 30.0, // 30% default
-                FloatRange::Linear { min: 0.0, max: 95.0 },
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 95.0,
+                },
             )
             .with_smoother(SmoothingStyle::Linear(10.0))
             .with_unit("%")
@@ -89,7 +100,10 @@ impl Default for DelayParams {
             wet_level: FloatParam::new(
                 "Wet Level",
                 30.0, // 30% default
-                FloatRange::Linear { min: 0.0, max: 100.0 },
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 100.0,
+                },
             )
             .with_smoother(SmoothingStyle::Linear(10.0))
             .with_unit("%")
@@ -98,7 +112,10 @@ impl Default for DelayParams {
             dry_level: FloatParam::new(
                 "Dry Level",
                 70.0, // 70% default
-                FloatRange::Linear { min: 0.0, max: 100.0 },
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 100.0,
+                },
             )
             .with_smoother(SmoothingStyle::Linear(10.0))
             .with_unit("%")
@@ -202,38 +219,23 @@ impl Plugin for Jeff {
         // Calculate delay in samples
         let delay_samples = ((delay_time_ms / 1000.0) * self.sample_rate) as usize;
 
-        for channel_samples in buffer.iter_samples() {            
+        for channel_samples in buffer.iter_samples() {
             // Process each channel
             for (channel_idx, sample) in channel_samples.into_iter().enumerate() {
-                if channel_idx == 0 {
-                    // Left channel
-                    let input_sample = *sample;
-                    let delayed_left = self.delay_buffer_left.process(input_sample, delay_samples);
-                    
-                    // Apply feedback
-                    let feedback_sample = delayed_left * feedback;
-                    if self.delay_buffer_left.write_pos > 0 {
-                        self.delay_buffer_left.buffer[self.delay_buffer_left.write_pos - 1] += feedback_sample;
-                    } else {
-                        self.delay_buffer_left.buffer[self.delay_buffer_left.size - 1] += feedback_sample;
-                    }
-                    
-                    *sample = dry_level * input_sample + wet_level * delayed_left;
-                } else if channel_idx == 1 {
-                    // Right channel
-                    let input_sample = *sample;
-                    let delayed_right = self.delay_buffer_right.process(input_sample, delay_samples);
-                    
-                    // Apply feedback
-                    let feedback_sample = delayed_right * feedback;
-                    if self.delay_buffer_right.write_pos > 0 {
-                        self.delay_buffer_right.buffer[self.delay_buffer_right.write_pos - 1] += feedback_sample;
-                    } else {
-                        self.delay_buffer_right.buffer[self.delay_buffer_right.size - 1] += feedback_sample;
-                    }
-                    
-                    *sample = dry_level * input_sample + wet_level * delayed_right;
-                }
+                let delay_buffer: &mut DelayBuffer = if channel_idx == 0 {
+                    &mut self.delay_buffer_left
+                } else {
+                    &mut self.delay_buffer_right
+                };
+
+                let input_sample = *sample;
+                let delayed = delay_buffer.process(input_sample, delay_samples);
+
+                // Apply feedback
+                let feedback_sample = delayed * feedback;
+                delay_buffer.apply_feedback(feedback_sample);
+
+                *sample = dry_level * input_sample + wet_level * delayed;
             }
         }
 
