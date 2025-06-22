@@ -19,7 +19,7 @@
             "label": "Bundle VST Plugin (All Platforms)",
             "type": "shell",
             "command": "bash",
-            "args": ["-c", "cargo nih-plug bundle delay_vst --release && cargo nih-plug bundle delay_vst --release --target x86_64-pc-windows-gnu"],
+            "args": ["-c", "cargo nih-plug bundle jeff --release && cargo nih-plug bundle jeff --release --target x86_64-pc-windows-gnu"],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -64,7 +64,7 @@
             "label": "Install VST3 Plugin",
             "type": "shell",
             "command": "bash",
-            "args": ["-c", "mkdir -p ~/.vst3 && cp -r target/bundled/delay_vst.vst3 ~/.vst3/ && mkdir -p ~/.clap && cp target/bundled/delay_vst.clap ~/.clap/ && echo 'Plugin installed to ~/.vst3/ and ~/.clap/'"],
+            "args": ["-c", "mkdir -p ~/.vst3 && cp -r target/bundled/jeff.vst3 ~/.vst3/ && mkdir -p ~/.clap && cp target/bundled/jeff.clap ~/.clap/ && echo 'Plugin installed to ~/.vst3/ and ~/.clap/'"],
             "group": "build",
             "dependsOn": "Bundle VST Plugin (All Platforms)",
             "problemMatcher": [],

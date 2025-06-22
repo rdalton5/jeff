@@ -2,18 +2,18 @@
 
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
-This is a Rust VST audio plugin project using the rust-vst framework for creating delay effects. 
+This is a Rust VST audio plugin project called "Jeff" using the nih-plug framework for creating delay effects. 
 
 ## Project Context
-- This project creates a VST delay plugin with configurable delay time, feedback, wet/dry mix
-- Uses the `vst` crate (rust-vst) for VST2 plugin development
+- This project creates a VST delay plugin called "Jeff" with configurable delay time, feedback, wet/dry mix
+- Uses the `nih-plug` crate for VST3/CLAP plugin development
 - Implements audio processing with delay buffers for stereo audio
 - Built as a cdylib (C dynamic library) for VST host compatibility
 
 ## Key Components
 - `DelayBuffer`: Circular buffer for storing delayed audio samples
-- `DelayVSTParams`: Plugin parameters (delay time, feedback, wet/dry levels)
-- `DelayVST`: Main plugin struct implementing the `Plugin` trait
+- `DelayParams`: Plugin parameters (delay time, feedback, wet/dry levels)
+- `Jeff`: Main plugin struct implementing the `Plugin` trait
 - Audio processing happens in the `process` method with real-time constraints
 
 ## Development Guidelines

@@ -1,4 +1,4 @@
-# Delay VST Plugin
+# Jeff - Delay VST Plugin
 
 A simple delay effect plugin written in Rust using the NIH-plug framework.
 

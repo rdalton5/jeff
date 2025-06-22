@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 
-// Copy the DelayBuffer from our main module for testing
+// Copy the DelayBuffer from our main module for testing (Jeff delay plugin)
 struct DelayBuffer {
     buffer: Vec<f32>,
     write_pos: usize,
@@ -42,7 +42,7 @@ impl DelayBuffer {
 }
 
 fn main() {
-    println!("Testing VST Delay Buffer...");
+    println!("Testing Jeff Delay Buffer...");
     
     let sample_rate = 44100.0;
     let delay_time = 0.1; // 100ms delay

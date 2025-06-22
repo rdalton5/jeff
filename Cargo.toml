@@ -1,10 +1,10 @@
 [package]
-name = "delay_vst"
+name = "jeff"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "delay_vst"
+name = "jeff"
 crate-type = ["cdylib"]
 
 [dependencies]

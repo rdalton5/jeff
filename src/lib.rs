@@ -108,14 +108,14 @@ impl Default for DelayParams {
 }
 
 /// The main delay plugin struct
-pub struct DelayVST {
+pub struct Jeff {
     params: Arc<DelayParams>,
     delay_buffer_left: DelayBuffer,
     delay_buffer_right: DelayBuffer,
     sample_rate: f32,
 }
 
-impl Default for DelayVST {
+impl Default for Jeff {
     fn default() -> Self {
         Self {
             params: Arc::new(DelayParams::default()),
@@ -126,8 +126,8 @@ impl Default for DelayVST {
     }
 }
 
-impl Plugin for DelayVST {
-    const NAME: &'static str = "Delay";
+impl Plugin for Jeff {
+    const NAME: &'static str = "Jeff";
     const VENDOR: &'static str = "Rob's Audio";
     const URL: &'static str = env!("CARGO_PKG_HOMEPAGE");
     const EMAIL: &'static str = "your.email@example.com";
@@ -241,9 +241,9 @@ impl Plugin for DelayVST {
     }
 }
 
-impl ClapPlugin for DelayVST {
-    const CLAP_ID: &'static str = "com.robs-audio.delay";
-    const CLAP_DESCRIPTION: Option<&'static str> = Some("A simple delay effect");
+impl ClapPlugin for Jeff {
+    const CLAP_ID: &'static str = "com.robs-audio.jeff";
+    const CLAP_DESCRIPTION: Option<&'static str> = Some("Jeff - A simple delay effect");
     const CLAP_MANUAL_URL: Option<&'static str> = Some(Self::URL);
     const CLAP_SUPPORT_URL: Option<&'static str> = None;
 
@@ -251,13 +251,13 @@ impl ClapPlugin for DelayVST {
     const CLAP_FEATURES: &'static [ClapFeature] = &[ClapFeature::AudioEffect, ClapFeature::Delay];
 }
 
-impl Vst3Plugin for DelayVST {
-    const VST3_CLASS_ID: [u8; 16] = *b"DelayVSTRobsAudi";
+impl Vst3Plugin for Jeff {
+    const VST3_CLASS_ID: [u8; 16] = *b"JeffVSTRobsAudio";
 
     // And also don't forget to change these categories
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] =
         &[Vst3SubCategory::Fx, Vst3SubCategory::Delay];
 }
 
-nih_export_clap!(DelayVST);
-nih_export_vst3!(DelayVST);
+nih_export_clap!(Jeff);
+nih_export_vst3!(Jeff);
